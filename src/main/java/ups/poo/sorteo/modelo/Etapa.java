@@ -29,4 +29,14 @@ public enum Etapa {
         int i = ordinal() + 1;
         return i < values().length ? values()[i] : null;
     }
+
+    // Devuelve la etapa que corresponde a una cantidad de equipos, o null si no existe
+    public static Etapa paraCantidad(int cantidad) {
+        for (Etapa etapa : values()) {
+            if (etapa.cantidadEquipos == cantidad) {
+                return etapa;
+            }
+        }
+        return null;
+    }
 }
