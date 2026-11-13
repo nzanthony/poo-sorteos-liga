@@ -16,6 +16,8 @@ public class VistaConsola {
         System.out.println("2. Sortear siguiente etapa");
         System.out.println("3. Simular torneo completo");
         System.out.println("4. Ver resultados");
+        System.out.println("5. Guardar torneo");
+        System.out.println("6. Cargar torneo");
         System.out.println("0. Salir");
     }
 
@@ -29,7 +31,7 @@ public class VistaConsola {
                     return opcion;
                 }
             } catch (NumberFormatException e) {
-                // No permite una entrada no numerica
+                // Si la entrada es no numerica se muestra el mismo error que para un numero fuera de rango
             }
             mostrarError("ingrese un numero entre " + minimo + " y " + maximo);
         }

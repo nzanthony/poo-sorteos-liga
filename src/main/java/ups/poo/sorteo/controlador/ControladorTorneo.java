@@ -1,5 +1,7 @@
 package ups.poo.sorteo.controlador;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
 import ups.poo.sorteo.modelo.*;
@@ -10,26 +12,29 @@ public class ControladorTorneo {
     private final VistaConsola vista;
     private final List<Equipo> equiposIniciales;
     private Torneo torneo;
+    private final ArchivoTorneo archivo;
 
-    public ControladorTorneo(VistaConsola vista, List<Equipo> equiposIniciales) {
+    public ControladorTorneo(VistaConsola vista, List<Equipo> equiposIniciales, ArchivoTorneo archivo) {
         this.vista = vista;
         this.equiposIniciales = equiposIniciales;
-
+        this.archivo = archivo;
     }
 
     public void iniciar() {
-        if (!crearTorneo()){
+        if (!inicializarTorneo()){
             return;
         }
         int opcion;
         do {
             vista.mostrarMenu();
-            opcion = vista.leerOpcion(0, 4);
+            opcion = vista.leerOpcion(0, 6);
             switch (opcion) {
                 case 1 -> vista.mostrarEquipos(torneo.getEquipos());
                 case 2 -> sortearSiguienteEtapa();
                 case 3 -> simularTorneo();
                 case 4 -> verResultados();
+                case 5 -> guardarTorneo();
+                case 6 -> cargarTorneo();
                 case 0 -> vista.mostrarMensaje("Hasta luego");
             }
         }while (opcion != 0);
@@ -77,7 +82,7 @@ public class ControladorTorneo {
         }
     }
 
-    // Muestra todas las etapas sorteadas hata el momento
+    // Muestra todas las etapas sorteadas hasta el momento
     private void verResultados() {
         if (torneo.getEtapaActual() == null) {
             vista.mostrarMensaje("Aun no se ha sorteado ninguna etapa");
@@ -92,5 +97,38 @@ public class ControladorTorneo {
         if (torneo.estaFinalizado()) {
             vista.mostrarCampeon(torneo.getCampeon());
         }
+    }
+
+    // Al iniciar carga el torneo guardado si existe, si no o si falla crea uno nuevo
+    private boolean inicializarTorneo() {
+        if (archivo.existe() && cargarTorneo()) {
+            return true;
+        }
+        return crearTorneo();
+    }
+
+    private void guardarTorneo() {
+        try {
+            archivo.guardar(torneo);
+            vista.mostrarMensaje("Torneo guardado en " + archivo.getRuta());
+        }catch (IOException e) {
+            vista.mostrarError("no se pudo guardar el torneo: " + e.getMessage());
+        }
+    }
+
+    // Devuelve true si el torneo se cargo correctamente
+    private boolean cargarTorneo() {
+        try {
+            torneo = archivo.cargar();
+            vista.mostrarMensaje("Torneo cargado desde " + archivo.getRuta());
+            return true;
+        } catch (FileNotFoundException e) {
+            vista.mostrarError("no existe un torneo guardado");
+        } catch (IOException e) {
+            vista.mostrarError("no se pudo leer el archivo " + e.getMessage());
+        } catch (ClassNotFoundException e) {
+            vista.mostrarError("el archivo no corresponde a un torneo valido");
+        }
+        return false;
     }
 }

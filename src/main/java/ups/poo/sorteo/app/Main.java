@@ -2,6 +2,7 @@ package ups.poo.sorteo.app;
 
 import java.util.List;
 
+import ups.poo.sorteo.modelo.ArchivoTorneo;
 import ups.poo.sorteo.modelo.Equipo;
 import ups.poo.sorteo.controlador.ControladorTorneo;
 import ups.poo.sorteo.vista.VistaConsola;
@@ -9,7 +10,8 @@ import ups.poo.sorteo.vista.VistaConsola;
 public class Main {
     public static void main(String[] args) {
         VistaConsola vista = new VistaConsola();
-        ControladorTorneo controlador = new ControladorTorneo(vista, crearEquipos());
+        ArchivoTorneo archivo = new ArchivoTorneo("torneo.ser");
+        ControladorTorneo controlador = new ControladorTorneo(vista, crearEquipos(), archivo);
         controlador.iniciar();
     }
 
