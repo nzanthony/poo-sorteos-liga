@@ -18,6 +18,7 @@ public class VistaConsola {
         System.out.println("4. Ver resultados");
         System.out.println("5. Guardar torneo");
         System.out.println("6. Cargar torneo");
+        System.out.println("7. Nuevo torneo");
         System.out.println("0. Salir");
     }
 
@@ -25,6 +26,11 @@ public class VistaConsola {
     public int leerOpcion(int minimo, int maximo){
         while (true) {
             System.out.print("Opcion: ");
+            // Si se cerro la entrada se elige Salir
+            if (!scanner.hasNextLine()) {
+                System.out.println();
+                return minimo;
+            }
             try {
                 int opcion = Integer.parseInt(scanner.nextLine().trim());
                 if (opcion >= minimo && opcion <= maximo) {

@@ -1,5 +1,6 @@
 package ups.poo.sorteo.controlador;
 
+import java.io.EOFException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
@@ -27,7 +28,7 @@ public class ControladorTorneo {
         int opcion;
         do {
             vista.mostrarMenu();
-            opcion = vista.leerOpcion(0, 6);
+            opcion = vista.leerOpcion(0, 7);
             switch (opcion) {
                 case 1 -> vista.mostrarEquipos(torneo.getEquipos());
                 case 2 -> sortearSiguienteEtapa();
@@ -35,7 +36,8 @@ public class ControladorTorneo {
                 case 4 -> verResultados();
                 case 5 -> guardarTorneo();
                 case 6 -> cargarTorneo();
-                case 0 -> vista.mostrarMensaje("Hasta luego");
+                case 7 -> nuevoTorneo();
+                case 0 -> salir();
             }
         }while (opcion != 0);
     }
@@ -53,7 +55,7 @@ public class ControladorTorneo {
 
     private void sortearSiguienteEtapa() {
         if (torneo.estaFinalizado()) {
-            vista.mostrarMensaje("El torneo ya termino");
+            vista.mostrarMensaje("El torneo ya termino. Use la opcion 7 para iniciar uno nuevo");
             vista.mostrarCampeon(torneo.getCampeon());
             return;
         }
@@ -74,6 +76,11 @@ public class ControladorTorneo {
     }
 
     private void simularTorneo() {
+        if (torneo.estaFinalizado()) {
+            vista.mostrarMensaje("El torneo ya termino. Use la opcion 7 para iniciar uno nuevo");
+            vista.mostrarCampeon(torneo.getCampeon());
+            return;
+        }
         try {
             torneo.simularTorneo();
             verResultados();
@@ -121,14 +128,44 @@ public class ControladorTorneo {
         try {
             torneo = archivo.cargar();
             vista.mostrarMensaje("Torneo cargado desde " + archivo.getRuta());
+            mostrarEstadoTorneo();
             return true;
         } catch (FileNotFoundException e) {
             vista.mostrarError("no existe un torneo guardado");
+        } catch (EOFException e) {
+            vista.mostrarError("el archivo de guardado esta vacio o incompleto");
         } catch (IOException e) {
             vista.mostrarError("no se pudo leer el archivo " + e.getMessage());
         } catch (ClassNotFoundException e) {
             vista.mostrarError("el archivo no corresponde a un torneo valido");
         }
         return false;
+    }
+
+    // Indica en que punto quedo el torneo cargado
+    private void mostrarEstadoTorneo() {
+        if (torneo.estaFinalizado()) {
+            vista.mostrarMensaje("El torneo cargado ya tiene campeon: " + torneo.getCampeon());
+        } else if (torneo.getEtapaActual() != null) {
+            vista.mostrarMensaje("Etapa actual: " + torneo.getEtapaActual().getNombre());
+        } else {
+            vista.mostrarMensaje("El torneo cargado aun no tiene etapas sorteadas");
+        }
+    }
+
+    // Reemplaza el torneo actual por uno nuevo con los mismos equipos
+    private void nuevoTorneo() {
+        if (crearTorneo()) {
+            vista.mostrarMensaje("Se creo un nuevo torneo");
+        }
+    }
+
+    // Ofrece guardar el torneo antes de cerrar el programa
+    private void salir() {
+        vista.mostrarMensaje("¿Desea guardar el torneo antes de salir? (1 = Si, 0 = No)");
+        if (vista.leerOpcion(0,1) == 1) {
+            guardarTorneo();
+        }
+        vista.mostrarMensaje("Hasta luego");
     }
 }
