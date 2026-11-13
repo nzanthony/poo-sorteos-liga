@@ -13,7 +13,9 @@ public class VistaConsola {
     public void mostrarMenu() {
         System.out.println("\n=== Sorteo LigaPro Ecuador ===");
         System.out.println("1. Ver equipos");
-        System.out.println("2. Sortear octavos");
+        System.out.println("2. Sortear siguiente etapa");
+        System.out.println("3. Simular torneo completo");
+        System.out.println("4. Ver resultados");
         System.out.println("0. Salir");
     }
 
@@ -43,8 +45,16 @@ public class VistaConsola {
     public void mostrarPartidos(Etapa etapa, List<Partido> partidos) {
         System.out.println("\n=== " + etapa.getNombre() + " ===");
         for (Partido partido : partidos) {
-            System.out.println(" " + partido);
+            String linea = " " + partido;
+            if (partido.getGanador() != null) {
+                linea += "  -> Ganador: " + partido.getGanador().getNombre();
+            }
+            System.out.println(linea);
         }
+    }
+
+    public void mostrarCampeon(Equipo campeon) {
+        System.out.println("\n*** Campeon: " + campeon.getNombre() + " ***");
     }
 
     public void mostrarMensaje(String mensaje) {

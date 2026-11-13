@@ -14,6 +14,8 @@ public class Torneo implements Serializable {
     private final List<Equipo> equipos;
     private final Map<Etapa, List<Partido>> partidosPorEtapa;
     private final Random random;
+    private Etapa etapaActual;
+    private Equipo campeon;
 
     public Torneo(String nombre, List<Equipo> equipos) throws NumeroEquiposInvalidoException {
         validarCantidad(equipos.size());
@@ -67,6 +69,52 @@ public class Torneo implements Serializable {
         return emparejar(restantes, partidos);
     }
 
+    // Avanza el torneo un paso
+    public void avanzarEtapa() throws NumeroEquiposInvalidoException, SorteoInvalidoException {
+        if (estaFinalizado()){
+            return;
+        }
+        // Se sortea la etapa inicial con todos los equipos
+        if (etapaActual == null) {
+            etapaActual = Etapa.paraCantidad(equipos.size());
+            partidosPorEtapa.put(etapaActual, sortearEtapa(equipos));
+            return;
+        }
+        List<Equipo> ganadores = jugarEtapa(etapaActual);
+        if (etapaActual == Etapa.FINAL){
+            campeon = ganadores.get(0);
+            return;
+        }
+        etapaActual = etapaActual.siguiente();
+        partidosPorEtapa.put(etapaActual, sortearEtapa(ganadores));
+    }
+
+    //Simula el torneo completo recursivamente
+    public void simularTorneo() throws NumeroEquiposInvalidoException, SorteoInvalidoException {
+        if (estaFinalizado()) {
+            return; // Si ya hay campeon lo retorna
+        }
+        avanzarEtapa();
+        simularTorneo();
+    }
+
+    // Juega los partidos de una etapa y devuelve los ganadores
+    private List<Equipo> jugarEtapa(Etapa etapa) throws SorteoInvalidoException {
+        List<Partido> partidos = partidosPorEtapa.get(etapa);
+        if (partidos == null || partidos.isEmpty()){
+            throw new SorteoInvalidoException("No hay partidos sorteados para " + etapa.getNombre());
+        }
+        List<Equipo> ganadores = new ArrayList<>();
+        for (Partido partido : partidos) {
+            partido.definirGanador(random);
+            if (partido.getGanador() == null) {
+                throw new SorteoInvalidoException("El partido " + partido + " no tiene ganador");
+            }
+            ganadores.add(partido.getGanador());
+        }
+        return ganadores;
+    }
+
     // Getters
     public String getNombre() {
         return nombre;
@@ -74,5 +122,23 @@ public class Torneo implements Serializable {
 
     public List<Equipo> getEquipos() {
         return List.copyOf(equipos);
+    }
+
+    public Etapa getEtapaActual() {
+        return etapaActual;
+    }
+
+    public Equipo getCampeon() {
+        return campeon;
+    }
+
+    public boolean estaFinalizado() {
+        return campeon != null;
+    }
+
+    //Devuelve los partidos de una etapa o una lista vacia si aun no se sortea
+    public List<Partido> getPartidos(Etapa etapa) {
+        List<Partido> partidos = partidosPorEtapa.get(etapa);
+        return partidos == null ? List.of() : List.copyOf(partidos);
     }
 }

@@ -24,10 +24,12 @@ public class ControladorTorneo {
         int opcion;
         do {
             vista.mostrarMenu();
-            opcion = vista.leerOpcion(0, 2);
+            opcion = vista.leerOpcion(0, 4);
             switch (opcion) {
                 case 1 -> vista.mostrarEquipos(torneo.getEquipos());
-                case 2 -> sortearOctavos();
+                case 2 -> sortearSiguienteEtapa();
+                case 3 -> simularTorneo();
+                case 4 -> verResultados();
                 case 0 -> vista.mostrarMensaje("Hasta luego");
             }
         }while (opcion != 0);
@@ -44,12 +46,51 @@ public class ControladorTorneo {
         }
     }
 
-    private void sortearOctavos() {
+    private void sortearSiguienteEtapa() {
+        if (torneo.estaFinalizado()) {
+            vista.mostrarMensaje("El torneo ya termino");
+            vista.mostrarCampeon(torneo.getCampeon());
+            return;
+        }
         try {
-            List<Partido> partidos = torneo.sortearEtapa(torneo.getEquipos());
-            vista.mostrarPartidos(Etapa.OCTAVOS, partidos);
-        } catch(NumeroEquiposInvalidoException | SorteoInvalidoException e) {
+            Etapa etapaJugada = torneo.getEtapaActual();
+            torneo.avanzarEtapa();
+            if (etapaJugada != null) {
+                vista.mostrarPartidos(etapaJugada, torneo.getPartidos(etapaJugada));
+            }
+            if (torneo.estaFinalizado()) {
+                vista.mostrarCampeon(torneo.getCampeon());
+            } else {
+                vista.mostrarPartidos(torneo.getEtapaActual(), torneo.getPartidos(torneo.getEtapaActual()));
+            }
+        } catch (NumeroEquiposInvalidoException | SorteoInvalidoException e) {
             vista.mostrarError(e.getMessage());
+        }
+    }
+
+    private void simularTorneo() {
+        try {
+            torneo.simularTorneo();
+            verResultados();
+        } catch (NumeroEquiposInvalidoException | SorteoInvalidoException e){
+            vista.mostrarError(e.getMessage());
+        }
+    }
+
+    // Muestra todas las etapas sorteadas hata el momento
+    private void verResultados() {
+        if (torneo.getEtapaActual() == null) {
+            vista.mostrarMensaje("Aun no se ha sorteado ninguna etapa");
+            return;
+        }
+        for (Etapa etapa : Etapa.values()){
+            List<Partido> partidos = torneo.getPartidos(etapa);
+            if (!partidos.isEmpty()) {
+                vista.mostrarPartidos(etapa, partidos);
+            }
+        }
+        if (torneo.estaFinalizado()) {
+            vista.mostrarCampeon(torneo.getCampeon());
         }
     }
 }
